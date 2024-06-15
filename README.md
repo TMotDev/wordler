@@ -1,0 +1,1 @@
+#817 first abear randy rayne rayon, after first and abear the array is empty
