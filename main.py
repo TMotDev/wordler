@@ -47,7 +47,7 @@ def generateTable(greenIndices, yellowIndices, input):
     table.add_row(*row, style="bold")
     return table
 
-def gameloop():
+def gameloop(words: list[str]):
 
     yellow_letters = {}
     green_letters = {}
@@ -55,24 +55,26 @@ def gameloop():
 
     show_all_available_words = Confirm.ask("Show all suggested words?", default=False)
     console.clear()
-    while ((input := Prompt.ask("Input word")) != "done"):
+    while True and len(words) > 1:
+        input = Prompt.ask("Input 5 character word:", default="-1")
+
+        if input == "-1":
+            break
+
+        if len(input) != 5:
+            print("Invalid input. Please enter a 5 character word.")
+            continue
 
         yellowIndices = set()
         greenIndices = set()
-        # reprompt if the input is invalid
-        while (len(input) != 5 and input != "done"):
-            input = Prompt.ask("Input 5 character word")
 
-        if input == "done":
-            break
-
-        # build a table with input characters and positions
         table = Table(box=box.MINIMAL)
         for i in range(5):
             table.add_column(str(i+1), justify="center",
                              header_style="grey39")
         table.add_row(*input)
-        # console.clear()
+
+        console.clear()
         console.rule("Wordle helper")
         console.print(table, justify="center")
 
@@ -88,7 +90,7 @@ def gameloop():
             yellow_letters = update_letter_dict(
                 input, yellowIndices, yellow_letters)
 
-        # console.clear()
+        console.clear()
         console.rule("Wordle helper")
         table = generateTable(greenIndices, yellowIndices, input)
         console.print(table, justify="center")
@@ -111,32 +113,29 @@ def gameloop():
         for i in grayInput:
             gray_letters.add(input[i])
 
-        # console.clear()
+        console.clear()
         console.rule("Wordle helper")
         table = generateTable(greenIndices, yellowIndices, input)
         console.print(table, justify="center")
 
-        # ! ? pass all words again?
-        result = wordleFilter.filterWords(words, green_letters, yellow_letters, gray_letters)
+        words = wordleFilter.filterWords(words, green_letters, yellow_letters, gray_letters)
 
-        console.print(green_letters)
-        console.print(yellow_letters)
-        console.print(gray_letters)
-        console.print(f"{result[:15]} {f"+ {len(result)-15} more" if len(result) > 15 else ""}", justify="center")
+        # print available words
+        console.print(f"{words[:15]} {f"+ {len(words)-15} more" if len(words) > 15 else ""}", justify="center")
+
         if show_all_available_words:
-            column = Columns(result, equal=True, expand=True)
+            column = Columns(words, equal=True, expand=True)
             console.print(column, justify="center")
 
 
 
 def main():
-    global words
-
     words = readFile("words.txt")
 
-    while(Confirm.ask("Start game?", default=True) == True):
-        console.clear()
-        gameloop()
+    gameloop(words)
+
+    while Confirm.ask("Start a new game?", default=True):
+        gameloop(words)
 
 
 
